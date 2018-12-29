@@ -14,7 +14,7 @@ import java.util.List;
 public class ProductsIO implements Serializable {  //тут брєд, поки не дивіться
     static String name;
     static ObjectInputStream objectInputStream;
-    static ObjectOutputStream objectOutputStream;// = new ObjectInputStream(new FileInputStream("data.txt"));
+    static ObjectOutputStream objectOutputStream;
 
     public ProductsIO(String name) {
         this.name = name;
@@ -22,12 +22,13 @@ public class ProductsIO implements Serializable {  //тут брєд, поки �
 
     static List<Priceable> read() throws IOException, ClassNotFoundException {
         objectInputStream = new ObjectInputStream(new FileInputStream("data.txt"));
-        List<Priceable> /*Object */priceables1 = (ArrayList<Priceable>) objectInputStream.readObject();
+        List<Priceable> priceables1 = new ArrayList<>();
+               priceables1.addAll(ArrayList.class.<Priceable>cast(objectInputStream.readObject()));
         objectInputStream.close();
         return priceables1;
     }
 
-    static void write(List<FlowerBouquet> priceables) throws IOException, ClassNotFoundException {
+    static void write(List<Priceable> priceables) throws IOException {
         objectOutputStream = new ObjectOutputStream(new FileOutputStream(name));
         objectOutputStream.writeObject(priceables);
         objectOutputStream.close();
@@ -35,12 +36,12 @@ public class ProductsIO implements Serializable {  //тут брєд, поки �
 
     public static void main(String[] args) throws Exception {
         ProductsIO productsIO = new ProductsIO("data.txt");
-        List<FlowerBouquet> priceables = new ArrayList<>();
+        List<Priceable> priceables = new ArrayList<>();
 
         priceables.add(new FlowerBouquet(new ArrayList<Flower>() {{
             add(new Flower(123.0, "China", 12, FlowerType.CAMELLIA));
         }}, EnumSet.allOf(Accessory.class)));
-        // productsIO.write(priceables);
+         productsIO.write(priceables);
         System.out.println(productsIO.read());
     }
 }

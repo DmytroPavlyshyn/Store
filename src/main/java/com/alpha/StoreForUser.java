@@ -5,6 +5,7 @@ import com.alpha.decorations.FlowerBouquet;
 import com.alpha.decorations.FlowerDecoration;
 import com.alpha.decorations.FlowerPot;
 import com.alpha.plants.*;
+import com.alpha.random.StoreRandomizer;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -23,50 +24,9 @@ public class StoreForUser {
     public static void main(String[] args) {
         //------------------------------------------------------------------------------------------------
         List<FlowerDecoration> flowerDecorations = new ArrayList<>();
-        flowerDecorations.add(new FlowerBouquet(new ArrayList<Flower>() {{
-            add(new Flower(123.0, "China", 12, FlowerType.CAMELLIA));
-        }}, EnumSet.allOf(Accessory.class)));
-        flowerDecorations.add(new FlowerBouquet(new ArrayList<Flower>() {{
-            add(new Flower(123.0, "Poland", 12, FlowerType.ROSE));
-        }}, EnumSet.allOf(Accessory.class)));
-        flowerDecorations.add(new FlowerBouquet(new ArrayList<Flower>() {{
-            add(new Flower(123.0, "England", 12, FlowerType.DAHLIA));
-        }}, EnumSet.allOf(Accessory.class)));
-        flowerDecorations.add(new FlowerBouquet(new ArrayList<Flower>() {{
-            add(new Flower(123.0, "Sweden", 12, FlowerType.MAGNOLIA));
-        }}, EnumSet.allOf(Accessory.class)));
-        flowerDecorations.add(new FlowerBouquet(new ArrayList<Flower>() {{
-            add(new Flower(123.0, "China", 12, FlowerType.SUNFLOWER));
-        }}, EnumSet.allOf(Accessory.class)));
-        flowerDecorations.add(new FlowerPot(new ArrayList<Flower>() {{
-            add(new Flower(123.0, "England", 12, FlowerType.DAHLIA));
-        }}, FlowerType.DAHLIA));
-        flowerDecorations.add(new FlowerPot(new ArrayList<Flower>() {{
-            add(new Flower(123.0, "Italy", 12, FlowerType.DAHLIA));
-        }}, FlowerType.DAHLIA));
-        flowerDecorations.add(new FlowerPot(new ArrayList<Flower>() {{
-            add(new Flower(123.0, "Greek", 12, FlowerType.DAHLIA));
-        }}, FlowerType.DAHLIA));
-        flowerDecorations.add(new FlowerPot(new ArrayList<Flower>() {{
-            add(new Flower(123.0, "China", 12, FlowerType.DAHLIA));
-        }}, FlowerType.DAHLIA));
-        //------------------------------------------------------------------------------------------------
-        List<Plant> plants = new ArrayList<Plant>() {
-            {
-                add(new Flower(123.0, "China", 12, FlowerType.CAMELLIA));
-                add(new Flower(123.0, "Ukraine", 12, FlowerType.CHAMOMILE));
-                add(new Flower(123.0, "China", 12, FlowerType.FRANGIPANI));
-                add(new Flower(123.0, "London", 12, FlowerType.DAHLIA));
-                add(new Flower(123.0, "China", 12, FlowerType.ROSE));
-                add(new Flower(123.0, "China", 12, FlowerType.CAMELLIA));
-                add(new Tree(123.0, "London", 12, TreeType.JACARANDA));
-                add(new Tree(123.0, "China", 12, TreeType.POINSETTIA));
-                add(new Tree(123.0, "China", 12, TreeType.PALM));
-            }
-        };
-        //------------------------------------------------------------------------------------------------
-        Store store = new Store(plants, flowerDecorations, "China");
-        Customer customer = new Customer("Don", "Vova", 500, 1);
+
+        Store store = new StoreRandomizer(47).nextStore(10,10,10,10);
+        Customer customer = new Customer("Don", "Vova", 1000, 1);
         store.getCustomers().add(customer);
         StoreForUser storeForUser = new StoreForUser(store);
 
@@ -154,20 +114,23 @@ public class StoreForUser {
 
         } while (true);
     }
-    private Delivery chooseDeliverMethod(){
+
+    private DeliveryMethod chooseDeliverMethod() {
         int i = 1;
-        for(Delivery delivery: Delivery.values()){
-            System.out.println(i++ + ". " + delivery);
+        for (DeliveryMethod deliveryMethod : DeliveryMethod.values()) {
+            System.out.println(i++ + ". " + deliveryMethod);
         }
-        return Delivery.values()[readNumberInBounds(1,Delivery.values().length)-1];
+        return DeliveryMethod.values()[readNumberInBounds(1, DeliveryMethod.values().length) - 1];
     }
-    private BuyMethod chooseBuyMethod(){
+
+    private BuyMethod chooseBuyMethod() {
         int i = 1;
-        for(BuyMethod buyMethod: BuyMethod.values()){
+        for (BuyMethod buyMethod : BuyMethod.values()) {
             System.out.println(i++ + ". " + buyMethod);
         }
-        return BuyMethod.values()[readNumberInBounds(1,BuyMethod.values().length)-1];
+        return BuyMethod.values()[readNumberInBounds(1, BuyMethod.values().length) - 1];
     }
+
     public void buyPlant(Class<? extends Plant> plantClass, Customer customer) {
         if (store.getPlants(ShowFilter.ALL).isEmpty()) {
             System.out.println("There\'s no  available plants, try again later");
@@ -198,11 +161,13 @@ public class StoreForUser {
         }
 
 
-        store.buyPlant(plantsOfChosentType.get(readNumberInBounds(1, i - 1) - 1), customer,chooseDeliverMethod(),chooseBuyMethod());
+//        store.buyPlant(plantsOfChosentType.get(readNumberInBounds(1, i - 1) - 1), customer, chooseDeliverMethod(), chooseBuyMethod());
+        store.buy(plantsOfChosentType.get(readNumberInBounds(1, i - 1) - 1), customer, chooseDeliverMethod(), chooseBuyMethod());
+
     }
 
     public void buyFlowerDecoration(Class<? extends FlowerDecoration> flowerDecorationClass, Customer customer) {
-        if (store.getReadyProducts().isEmpty()) {
+        if (store.getReadyFlowerDecorations().isEmpty()) {
             System.out.println("There\'s no  available decorations, try again later");
             return;
         }
@@ -213,11 +178,13 @@ public class StoreForUser {
         }
 
         List<FlowerDecoration> flowerDecorationsOfChosenType = new ArrayList<>();
-        for (FlowerDecoration flowerDecoration : store.getFlowerDecoration(choiceEn)) {
-            if (flowerDecorationClass.isInstance(flowerDecoration)) {
-                flowerDecorationsOfChosenType.add(flowerDecoration);
-            }
+
+        if (flowerDecorationClass.equals(FlowerBouquet.class)) {
+            flowerDecorationsOfChosenType.addAll(store.getFlowerBouquets());
+        } else if (flowerDecorationClass.equals(FlowerPot.class)) {
+            flowerDecorationsOfChosenType.addAll(store.getFlowerPots(choiceEn));
         }
+
         if (flowerDecorationsOfChosenType.isEmpty()) {
             System.out.println("There\'s no available such " + flowerDecorationClass.getSimpleName().toLowerCase());
             return;
@@ -227,7 +194,9 @@ public class StoreForUser {
             System.out.println(i++ + ". " + flowerDecoration);
         }
 
-        store.buyReadyProduct(flowerDecorationsOfChosenType.get(readNumberInBounds(1, i - 1) - 1), customer,chooseDeliverMethod(),chooseBuyMethod());
+//        store.buyReadyFlowerDecoration(flowerDecorationsOfChosenType.get(readNumberInBounds(1, i - 1) - 1), customer, chooseDeliverMethod(), chooseBuyMethod());
+        store.buy(flowerDecorationsOfChosenType.get(readNumberInBounds(1, i - 1) - 1), customer, chooseDeliverMethod(), chooseBuyMethod());
+
     }
 
     FlowerBouquet createBouquet() {
@@ -254,7 +223,7 @@ public class StoreForUser {
         }
         matcher = pattern.matcher(scanner.nextLine());
         while (matcher.find()) {
-            Accessory accessory = Accessory.values()[Integer.parseInt(matcher.group("index"))-1];
+            Accessory accessory = Accessory.values()[Integer.parseInt(matcher.group("index")) - 1];
             chosenAccessories.add(accessory);
         }
         return new FlowerBouquet(chosenFlowers, chosenAccessories);
@@ -266,7 +235,7 @@ public class StoreForUser {
             if (flowerBouquet == null) {
                 return;
             }
-            store.createAndBuyFlowerBouquet(flowerBouquet.getFlowers(), flowerBouquet.getAccessories(), customer,chooseDeliverMethod(),chooseBuyMethod());
+            store.createAndBuyFlowerBouquet(flowerBouquet.getFlowers(), flowerBouquet.getAccessories(), customer, chooseDeliverMethod(), chooseBuyMethod());
         } catch (ArrayIndexOutOfBoundsException e) {
             System.out.println("You entered some wrong indexes, try again!");
         }
@@ -292,7 +261,6 @@ public class StoreForUser {
             chosenFlowerType = flowerTypeIterator.next();
         }
         System.out.println(chosenFlowerType);
-        System.out.println();
         List<Flower> flowersOfChosenType = store.getFlowersByType(chosenFlowerType);
         i = 1;
         for (Flower flower : flowersOfChosenType) {
@@ -315,7 +283,7 @@ public class StoreForUser {
             if (flowerPot == null) {
                 return;
             }
-            store.createAndBuyFlowerPot(flowerPot.getFlowers(), flowerPot.getFlowerType(), customer,chooseDeliverMethod(),chooseBuyMethod());
+            store.createAndBuyFlowerPot(flowerPot.getFlowers(), flowerPot.getFlowerType(), customer, chooseDeliverMethod(), chooseBuyMethod());
         } catch (ArrayIndexOutOfBoundsException e) {
             System.out.println("You entered some wrong indexes, try again!");
         }

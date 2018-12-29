@@ -2,12 +2,12 @@ package com.alpha;
 
 public class Order implements Priceable {
     private Priceable priceable;
-    private Delivery delivery;
+    private DeliveryMethod deliveryMethod;
     private BuyMethod buyMethod;
 
-    public Order(Priceable priceable, Delivery delivery, BuyMethod buyMethod) {
+    public Order(Priceable priceable, DeliveryMethod deliveryMethod, BuyMethod buyMethod) {
         this.priceable = priceable;
-        this.delivery = delivery;
+        this.deliveryMethod = deliveryMethod;
         this.buyMethod = buyMethod;
     }
 
@@ -15,8 +15,8 @@ public class Order implements Priceable {
         return priceable;
     }
 
-    public Delivery getDelivery() {
-        return delivery;
+    public DeliveryMethod getDeliveryMethod() {
+        return deliveryMethod;
     }
 
     public BuyMethod getBuyMethod() {
@@ -25,14 +25,14 @@ public class Order implements Priceable {
 
     @Override
     public int calculatePrice() {
-        return priceable.calculatePrice() + (int)((double)priceable.calculatePrice()* getDelivery().getPercents());
+        return priceable.calculatePrice() + (int)((double)priceable.calculatePrice()* getDeliveryMethod().getPercents());
     }
 
     @Override
     public String toString() {
         final StringBuffer sb = new StringBuffer("Order{");
         sb.append("priceable=").append(priceable);
-        sb.append(", delivery=").append(delivery);
+        sb.append(", deliveryMethod=").append(deliveryMethod);
         sb.append(", buyMethod=").append(buyMethod);
         sb.append('}');
         return sb.toString();

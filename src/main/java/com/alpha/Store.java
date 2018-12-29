@@ -16,27 +16,27 @@ import java.util.*;
 public class Store {
 
     private List<Plant> inventoryOfPlants;
-    private List<FlowerDecoration> readyProducts;
+    private List<FlowerDecoration> readyFlowerDecorations;
     private List<Order> soldProducts = new ArrayList<>();
     private String country;
     private Set<Customer> customers = new LinkedHashSet<>();
     private Integer balance;
 
-    public Store(List<Plant> inventoryOfPlants, List<FlowerDecoration> readyProducts, String country) {
+    public Store(List<Plant> inventoryOfPlants, List<FlowerDecoration> readyFlowerDecorations, String country) {
         this.inventoryOfPlants = inventoryOfPlants;
-        this.readyProducts = readyProducts;
+        this.readyFlowerDecorations = readyFlowerDecorations;
         this.country = country;
         this.balance = 0;
     }
 
 
     //getters
-    public List<Plant> getInventoryOfPlants() {
+    public List<Plant> getPlants() {
         return inventoryOfPlants;
     }
 
-    public List<FlowerDecoration> getReadyProducts() {
-        return readyProducts;
+    public List<FlowerDecoration> getReadyFlowerDecorations() {
+        return readyFlowerDecorations;
     }
 
     public List<Order> getSoldProducts() {
@@ -93,7 +93,7 @@ public class Store {
 
     LinkedHashSet<FlowerType> getAvailableFlowerTypes() {
         LinkedHashSet<FlowerType> flowerTypes = new LinkedHashSet<>();
-        for (Plant plant : getInventoryOfPlants()) {
+        for (Plant plant : getPlants()) {
             if (plant instanceof Flower) {
                 flowerTypes.add(((Flower) plant).getFlowerType());
             }
@@ -103,7 +103,7 @@ public class Store {
 
     public List<Flower> getFlowersByType(FlowerType flowerType) {
         List<Flower> flowers = new ArrayList<>();
-        List<Plant> plants = getInventoryOfPlants();
+        List<Plant> plants = getPlants();
         for (Plant plant : plants) {
             if (plant instanceof Flower) {
                 if (((Flower) plant).getFlowerType().equals(flowerType)) {
@@ -116,7 +116,7 @@ public class Store {
 
     public List<FlowerBouquet> getFlowerBouquets() {
         List<FlowerBouquet> flowerBouquets = new ArrayList<>();
-        for (FlowerDecoration flowerDecoration : readyProducts) {
+        for (FlowerDecoration flowerDecoration : readyFlowerDecorations) {
             if (flowerDecoration instanceof FlowerBouquet) {
                 flowerBouquets.add((FlowerBouquet) flowerDecoration);
             }
@@ -127,7 +127,7 @@ public class Store {
 
     public List<FlowerPot> getFlowerPots() {
         List<FlowerPot> flowerPots = new ArrayList<>();
-        for (FlowerDecoration flowerDecoration : readyProducts) {
+        for (FlowerDecoration flowerDecoration : readyFlowerDecorations) {
             if (flowerDecoration instanceof FlowerPot) {
                 flowerPots.add((FlowerPot) flowerDecoration);
             }
@@ -136,9 +136,13 @@ public class Store {
         return flowerPots;
     }
 
-    public List<FlowerDecoration> getFlowerDecoration(ShowFilter showFilter) {
-        List<FlowerDecoration> flowerDecorations = new ArrayList<>();
-        for (FlowerDecoration flowerDecoration : readyProducts) {
+
+    public List<FlowerPot> getFlowerPots(ShowFilter showFilter) {
+        List<FlowerPot> flowerPots = new ArrayList<>();
+        for (FlowerDecoration flowerDecoration : readyFlowerDecorations) {
+            if (!(flowerDecoration instanceof FlowerPot)) {
+                continue;
+            }
             if (showFilter.equals(ShowFilter.NATIVE)) {
                 if (!isNative(flowerDecoration.getFlowers().get(0))) {
                     continue;
@@ -149,9 +153,9 @@ public class Store {
                     continue;
                 }
             }
-            flowerDecorations.add(flowerDecoration);
+            flowerPots.add((FlowerPot) flowerDecoration);
         }
-        return flowerDecorations;
+        return flowerPots;
     }
 
     public Integer getBalance() {
@@ -170,7 +174,7 @@ public class Store {
     }
 
     //methods for creating and buying orders
-    private FlowerBouquet createFlowerBouquetOrder(List<Flower> flowers, EnumSet<Accessory> accessories) {
+    private FlowerBouquet createFlowerBouquet(List<Flower> flowers, EnumSet<Accessory> accessories) {
         List<Flower> flowers1 = new ArrayList<>(flowers);
         for (Plant plant : inventoryOfPlants) {
             if (!(plant instanceof Flower)) {
@@ -186,9 +190,9 @@ public class Store {
         throw new RuntimeException("There\'s no such flowers");
     }
 
-    void createAndBuyFlowerBouquet(List<Flower> flowers, EnumSet<Accessory> accessories, Customer customer, Delivery delivery, BuyMethod buyMethod) {
-        FlowerBouquet flowerBouquet = createFlowerBouquetOrder(flowers, accessories);
-        Order order = new Order(flowerBouquet, delivery, buyMethod);
+    void createAndBuyFlowerBouquet(List<Flower> flowers, EnumSet<Accessory> accessories, Customer customer, DeliveryMethod deliveryMethod, BuyMethod buyMethod) {
+        FlowerBouquet flowerBouquet = createFlowerBouquet(flowers, accessories);
+        Order order = new Order(flowerBouquet, deliveryMethod, buyMethod);
         if (flowerBouquet.calculatePrice() > customer.getBalance()) {
             throw new RuntimeException("You don\'t have enough money");
         }
@@ -201,7 +205,7 @@ public class Store {
         customer.getBoughtProducts().add(order);
     }
 
-    private FlowerPot createFlowerPotOrder(List<Flower> flowers, FlowerType flowerType) {
+    private FlowerPot createFlowerPot(List<Flower> flowers, FlowerType flowerType) {
 
         List<Flower> flowers1 = new ArrayList<>(flowers);
         for (Plant plant : inventoryOfPlants) {
@@ -218,9 +222,9 @@ public class Store {
         throw new RuntimeException("There\'s no such flowers");
     }
 
-    void createAndBuyFlowerPot(List<Flower> flowers, FlowerType flowerType, Customer customer, Delivery delivery, BuyMethod buyMethod) {
-        FlowerPot flowerPot = createFlowerPotOrder(flowers, flowerType);
-        Order order = new Order(flowerPot, delivery, buyMethod);
+    void createAndBuyFlowerPot(List<Flower> flowers, FlowerType flowerType, Customer customer, DeliveryMethod deliveryMethod, BuyMethod buyMethod) {
+        FlowerPot flowerPot = createFlowerPot(flowers, flowerType);
+        Order order = new Order(flowerPot, deliveryMethod, buyMethod);
         if (order.calculatePrice() > customer.getBalance()) {
             throw new RuntimeException("You don\'t have enough money");
         }
@@ -233,12 +237,12 @@ public class Store {
         customer.getBoughtProducts().add(order);
     }
 
-    //methods for buying simple plants and ready products
-    void buyPlant(Plant plant, Customer customer, Delivery delivery, BuyMethod buyMethod) {
+    /*//methods for buying simple plants and ready products
+    void buyPlant(Plant plant, Customer customer, DeliveryMethod deliveryMethod, BuyMethod buyMethod) {
         if (!inventoryOfPlants.contains(plant)) {
             throw new RuntimeException("There\'s no such plant");
         }
-        Order order = new Order(plant, delivery, buyMethod);
+        Order order = new Order(plant, deliveryMethod, buyMethod);
         if (order.calculatePrice() > customer.getBalance()) {
             throw new RuntimeException("You don\'t have enough money");
         }
@@ -249,23 +253,47 @@ public class Store {
         customer.getBoughtProducts().add(order);
     }
 
-    void buyReadyProduct(FlowerDecoration flowerDecoration, Customer customer, Delivery delivery, BuyMethod buyMethod) {
-        if (!readyProducts.contains(flowerDecoration)) {
+    void buyReadyFlowerDecoration(FlowerDecoration flowerDecoration, Customer customer, DeliveryMethod deliveryMethod, BuyMethod buyMethod) {
+        if (!readyFlowerDecorations.contains(flowerDecoration)) {
             throw new RuntimeException("There\'s no such flower decoration");
         }
-        Order order = new Order(flowerDecoration, delivery, buyMethod);
+        Order order = new Order(flowerDecoration, deliveryMethod, buyMethod);
         if (order.calculatePrice() > customer.getBalance()) {
             throw new RuntimeException("You don\'t have enough money");
         }
         this.balance += order.calculatePrice();
         customer.setBalance(customer.getBalance() - order.calculatePrice());
-        readyProducts.remove(flowerDecoration);
+        readyFlowerDecorations.remove(flowerDecoration);
+        soldProducts.add(order);
+        customer.getBoughtProducts().add(order);
+    }*/
+    void buy(Priceable priceable, Customer customer, DeliveryMethod deliveryMethod, BuyMethod buyMethod) {
+        if (priceable instanceof FlowerDecoration) {
+            if (!readyFlowerDecorations.contains(priceable)) {
+                throw new RuntimeException("There\'s no such flower decoration");
+            }
+        }
+        if (priceable instanceof Plant) {
+            if (!inventoryOfPlants.contains(priceable)) {
+                throw new RuntimeException("There\'s no such flower");
+            }
+        }
+        Order order = new Order(priceable, deliveryMethod, buyMethod);
+        if (order.calculatePrice() > customer.getBalance()) {
+            throw new RuntimeException("You don\'t have enough money");
+        }
+        this.balance += order.calculatePrice();
+        customer.setBalance(customer.getBalance() - order.calculatePrice());
+
+        if (priceable instanceof FlowerDecoration) {
+            readyFlowerDecorations.remove(priceable);
+        }
+        if (priceable instanceof Plant) {
+            inventoryOfPlants.remove(priceable);
+        }
         soldProducts.add(order);
         customer.getBoughtProducts().add(order);
     }
-
-
-    
 
     private boolean isNative(Plant plant) {
         return plant.getCountry().equals(country);

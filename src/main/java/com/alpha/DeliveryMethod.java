@@ -2,11 +2,11 @@ package com.alpha;
 
 
 
-public enum Delivery {
+public enum DeliveryMethod {
     NOVA_POSHTA(0.2), UKR_POSHTA(0.1), CORIER_DELIVERY(0.4), WITHOUT(0.0);
     double percents;
 
-    Delivery(double percents) {
+    DeliveryMethod(double percents) {
         this    .percents = percents;
     }
 
