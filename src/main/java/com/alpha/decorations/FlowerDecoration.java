@@ -3,10 +3,11 @@ package com.alpha.decorations;
 import com.alpha.Priceable;
 import com.alpha.plants.Flower;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 
-public abstract class FlowerDecoration implements Priceable {
+public abstract class FlowerDecoration implements Priceable, Serializable {
     private List<Flower> flowers;
 
     public FlowerDecoration(List<Flower> flowers) {

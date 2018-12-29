@@ -16,9 +16,9 @@ public class Tree extends Plant {
 
     @Override
     public String toString() {
-        return "Tree{" +
-                "treeType=" + treeType +
-                "} " + super.toString();
+        return "\n" + this.getTreeType() + "{" +
+                super.toString()
+                + "} \n";
     }
 
     @Override

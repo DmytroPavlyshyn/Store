@@ -32,10 +32,12 @@ public class Plant implements Priceable, Serializable {
     }
     @Override
     public String toString() {
-        return "\nPlant{" +
+        return "\n" +
                 "length=" + length +
                 ", country='" + country + '\'' +
-                "}\n";
+                ", price='" + price + '\'' +
+
+                "\n";
     }
 
     @Override

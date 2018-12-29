@@ -33,7 +33,7 @@ public class FlowerPot extends FlowerDecoration implements Serializable {
         System.out.println(priceables);
     }
 
-    private boolean areSameTypeFlowers(List<com.alpha.plants.Flower> flowers, FlowerType flowerType) {
+    private boolean areSameTypeFlowers(List<Flower> flowers, FlowerType flowerType) {
         for (Flower flower : flowers) {
             if (!flower.getFlowerType().equals(flowerType)) {
                 return false;

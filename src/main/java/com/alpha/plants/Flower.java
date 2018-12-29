@@ -17,10 +17,9 @@ public class Flower extends Plant implements Serializable {
 
     @Override
     public String toString() {
-        return "\nFlower{" +
-                "\tflowerType=" + flowerType +
-                 super.toString()
-                +  "} \n";
+        return "\n" + this.getFlowerType() + "{" +
+                super.toString()
+                + "} \n";
     }
 
     @Override

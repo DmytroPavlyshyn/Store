@@ -66,44 +66,80 @@ public class StoreForUser {
         };
         //------------------------------------------------------------------------------------------------
         Store store = new Store(plants, flowerDecorations, "China");
+        Customer customer = new Customer("Don", "Vova", 500, 1);
+        store.getCustomers().add(customer);
         StoreForUser storeForUser = new StoreForUser(store);
+
         while (true) {
             storeForUser.help();
             switch (new Scanner(System.in).nextInt()) {
                 case 1:
-                    storeForUser.buyPlant(Flower.class);
+                    storeForUser.buyPlant(Flower.class, customer);
                     break;
                 case 2:
-                    storeForUser.buyPlant(Tree.class);
+                    storeForUser.buyPlant(Tree.class, customer);
                     break;
                 case 3:
-                    storeForUser.buyFlowerDecoration(FlowerBouquet.class);
+                    storeForUser.buyFlowerDecoration(FlowerBouquet.class, customer);
                     break;
                 case 4:
-                    storeForUser.buyFlowerDecoration(FlowerPot.class);
+                    storeForUser.buyFlowerDecoration(FlowerPot.class, customer);
                     break;
                 case 5:
-                    //System.out.println(storeForUser.createBouquet());
-                    storeForUser.createAndBuyFlowerPot();
+                    storeForUser.createAndBuyBouquet(customer);
                     break;
                 case 6:
-                    //System.out.println(storeForUser.createBouquet());
-                    //storeForUser.createAndBuyBouquet();
-                    storeForUser.createFlowerPot();
+                    storeForUser.createAndBuyFlowerPot(customer);
+                    break;
+                case 7:
+                    System.out.println(storeForUser.getStore().getFlowers(ShowFilter.ALL));
+                    break;
+                case 8:
+                    System.out.println(storeForUser.getStore().getTrees(ShowFilter.ALL));
+                    break;
+                case 9:
+                    System.out.println(storeForUser.getStore().getFlowerBouquets());
+                    break;
+                case 10:
+                    System.out.println(storeForUser.getStore().getFlowerPots());
+                    break;
+                case 11:
+                    System.out.println(customer.getBalance() + " $");
+                    break;
+                case 12:
+                    System.out.println(customer.getBoughtProducts());
+                    break;
+                default:
+                    System.out.println("Wrong command");
                     break;
             }
+            System.out.println("Do you want to continue 1 - yes, 2 - no?");
+            if (storeForUser.readNumberInBounds(1, 2) == 2) {
+                return;
+            }
+            storeForUser.scanner.nextLine();
         }
+    }
+
+    public Store getStore() {
+        return store;
     }
 
     public void help() {
         System.out.println("What do you want to buy ?" +
-                "\n1 - Buy flower" + // 1 - all flowers, 2 - only native, 3 - overseas
-                "\n2 - Buy tree" +
-                "\n3 - Flower bouquet" +
-                "\n4 - Flower pot" +
-                "\n5 - Create and buy bouquet" +
-                "\n6 - Create and buy pot" +
-                "\n7 - ");
+                "\n1  - Buy flower" + // 1 - all flowers, 2 - only native, 3 - overseas
+                "\n2  - Buy tree" +
+                "\n3  - Flower bouquet" +
+                "\n4  - Flower pot" +
+                "\n5  - Create and buy bouquet" +
+                "\n6  - Create and buy pot" +
+                "\n7  - Show all available flowers" +
+                "\n8  - Show all available trees" +
+                "\n9  - Show all available flower bouquets" +
+                "\n10 - Show all available flower pots" +
+                "\n11 - Show my balance" +
+                "\n12 - Show bought products"
+        );
     }
 
 
@@ -118,8 +154,21 @@ public class StoreForUser {
 
         } while (true);
     }
-
-    public void buyPlant(Class<? extends Plant> plantClass) {
+    private Delivery chooseDeliverMethod(){
+        int i = 1;
+        for(Delivery delivery: Delivery.values()){
+            System.out.println(i++ + ". " + delivery);
+        }
+        return Delivery.values()[readNumberInBounds(1,Delivery.values().length)-1];
+    }
+    private BuyMethod chooseBuyMethod(){
+        int i = 1;
+        for(BuyMethod buyMethod: BuyMethod.values()){
+            System.out.println(i++ + ". " + buyMethod);
+        }
+        return BuyMethod.values()[readNumberInBounds(1,BuyMethod.values().length)-1];
+    }
+    public void buyPlant(Class<? extends Plant> plantClass, Customer customer) {
         if (store.getPlants(ShowFilter.ALL).isEmpty()) {
             System.out.println("There\'s no  available plants, try again later");
             return;
@@ -149,10 +198,10 @@ public class StoreForUser {
         }
 
 
-        store.buyPlant(plantsOfChosentType.get(readNumberInBounds(1, i - 1) - 1));
+        store.buyPlant(plantsOfChosentType.get(readNumberInBounds(1, i - 1) - 1), customer,chooseDeliverMethod(),chooseBuyMethod());
     }
 
-    public void buyFlowerDecoration(Class<? extends FlowerDecoration> flowerDecorationClass) {
+    public void buyFlowerDecoration(Class<? extends FlowerDecoration> flowerDecorationClass, Customer customer) {
         if (store.getReadyProducts().isEmpty()) {
             System.out.println("There\'s no  available decorations, try again later");
             return;
@@ -178,12 +227,13 @@ public class StoreForUser {
             System.out.println(i++ + ". " + flowerDecoration);
         }
 
-        store.buyFlowerDecoration(flowerDecorationsOfChosenType.get(readNumberInBounds(1, i - 1) - 1));
+        store.buyReadyProduct(flowerDecorationsOfChosenType.get(readNumberInBounds(1, i - 1) - 1), customer,chooseDeliverMethod(),chooseBuyMethod());
     }
 
     FlowerBouquet createBouquet() {
         List<Flower> availableFlowers = store.getFlowers(ShowFilter.ALL);
         List<Flower> chosenFlowers = new ArrayList<>();
+        EnumSet<Accessory> chosenAccessories = EnumSet.noneOf(Accessory.class);
         if (availableFlowers.isEmpty()) {
             System.out.println("There\'s no  available plants, try again later");
             return null;
@@ -193,22 +243,30 @@ public class StoreForUser {
             System.out.println(i++ + ". " + flower);
         }
         Pattern pattern = Pattern.compile("(?<index>\\d+)");
-        Scanner scanner = new Scanner(System.in);
         Matcher matcher = pattern.matcher(scanner.nextLine());
         while (matcher.find()) {
             Flower flower = availableFlowers.get(Integer.parseInt(matcher.group("index")) - 1);
             chosenFlowers.add(flower);
         }
-        return new FlowerBouquet(chosenFlowers, EnumSet.allOf(Accessory.class));
+        i = 1;
+        for (Accessory accessory : Accessory.values()) {
+            System.out.println(i++ + ". " + accessory);
+        }
+        matcher = pattern.matcher(scanner.nextLine());
+        while (matcher.find()) {
+            Accessory accessory = Accessory.values()[Integer.parseInt(matcher.group("index"))-1];
+            chosenAccessories.add(accessory);
+        }
+        return new FlowerBouquet(chosenFlowers, chosenAccessories);
     }
 
-    void createAndBuyBouquet() {
+    void createAndBuyBouquet(Customer customer) {
         try {
             FlowerBouquet flowerBouquet = createBouquet();
             if (flowerBouquet == null) {
                 return;
             }
-            store.buyFlowerBouquet(flowerBouquet.getFlowers(), flowerBouquet.getAccessories());
+            store.createAndBuyFlowerBouquet(flowerBouquet.getFlowers(), flowerBouquet.getAccessories(), customer,chooseDeliverMethod(),chooseBuyMethod());
         } catch (ArrayIndexOutOfBoundsException e) {
             System.out.println("You entered some wrong indexes, try again!");
         }
@@ -251,13 +309,13 @@ public class StoreForUser {
         return new FlowerPot(chosenFlowers, chosenFlowerType);
     }
 
-    void createAndBuyFlowerPot(){
+    void createAndBuyFlowerPot(Customer customer) {
         try {
             FlowerPot flowerPot = createFlowerPot();
             if (flowerPot == null) {
                 return;
             }
-            store.buyFlowerPot(flowerPot.getFlowers(),flowerPot.getFlowerType());
+            store.createAndBuyFlowerPot(flowerPot.getFlowers(), flowerPot.getFlowerType(), customer,chooseDeliverMethod(),chooseBuyMethod());
         } catch (ArrayIndexOutOfBoundsException e) {
             System.out.println("You entered some wrong indexes, try again!");
         }

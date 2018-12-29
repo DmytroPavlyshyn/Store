@@ -11,6 +11,8 @@ import java.util.Objects;
 public class FlowerBouquet extends FlowerDecoration implements Serializable {
     private EnumSet<Accessory> accessories;
 
+
+
     public FlowerBouquet(List<Flower> flowers, EnumSet<Accessory> accessories) {
         super(flowers);
         this.accessories = accessories;
