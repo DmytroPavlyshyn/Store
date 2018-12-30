@@ -1,7 +1,7 @@
 package com.alpha;
 
 
-import com.alpha.decorations.Accessory;
+import com.alpha.decorations.WrapperType;
 import com.alpha.decorations.FlowerBouquet;
 import com.alpha.decorations.FlowerDecoration;
 import com.alpha.decorations.FlowerPot;
@@ -174,7 +174,7 @@ public class Store {
     }
 
     //methods for creating and buying orders
-    private FlowerBouquet createFlowerBouquet(List<Flower> flowers, EnumSet<Accessory> accessories) {
+    FlowerBouquet createFlowerBouquet(List<Flower> flowers, WrapperType wrapperType) {
         List<Flower> flowers1 = new ArrayList<>(flowers);
         for (Plant plant : inventoryOfPlants) {
             if (!(plant instanceof Flower)) {
@@ -185,13 +185,13 @@ public class Store {
             }
         }
         if (flowers1.size() == 0) {
-            return new FlowerBouquet(flowers, accessories);
+            return new FlowerBouquet(flowers, wrapperType);
         }
         throw new RuntimeException("There\'s no such flowers");
     }
 
-    void createAndBuyFlowerBouquet(List<Flower> flowers, EnumSet<Accessory> accessories, Customer customer, DeliveryMethod deliveryMethod, BuyMethod buyMethod) {
-        FlowerBouquet flowerBouquet = createFlowerBouquet(flowers, accessories);
+    void createAndBuyFlowerBouquet(List<Flower> flowers, WrapperType wrapperType, Customer customer, DeliveryMethod deliveryMethod, BuyMethod buyMethod) {
+        FlowerBouquet flowerBouquet = createFlowerBouquet(flowers, wrapperType);
         Order order = new Order(flowerBouquet, deliveryMethod, buyMethod);
         if (flowerBouquet.calculatePrice() > customer.getBalance()) {
             throw new RuntimeException("You don\'t have enough money");
@@ -205,7 +205,7 @@ public class Store {
         customer.getBoughtProducts().add(order);
     }
 
-    private FlowerPot createFlowerPot(List<Flower> flowers, FlowerType flowerType) {
+    FlowerPot createFlowerPot(List<Flower> flowers, FlowerType flowerType) {
 
         List<Flower> flowers1 = new ArrayList<>(flowers);
         for (Plant plant : inventoryOfPlants) {
@@ -237,46 +237,20 @@ public class Store {
         customer.getBoughtProducts().add(order);
     }
 
-    /*//methods for buying simple plants and ready products
-    void buyPlant(Plant plant, Customer customer, DeliveryMethod deliveryMethod, BuyMethod buyMethod) {
-        if (!inventoryOfPlants.contains(plant)) {
-            throw new RuntimeException("There\'s no such plant");
-        }
-        Order order = new Order(plant, deliveryMethod, buyMethod);
-        if (order.calculatePrice() > customer.getBalance()) {
-            throw new RuntimeException("You don\'t have enough money");
-        }
-        this.balance += order.calculatePrice();
-        customer.setBalance(customer.getBalance() - order.calculatePrice());
-        inventoryOfPlants.remove(plant);
-        soldProducts.add(order);
-        customer.getBoughtProducts().add(order);
-    }
 
-    void buyReadyFlowerDecoration(FlowerDecoration flowerDecoration, Customer customer, DeliveryMethod deliveryMethod, BuyMethod buyMethod) {
-        if (!readyFlowerDecorations.contains(flowerDecoration)) {
-            throw new RuntimeException("There\'s no such flower decoration");
-        }
-        Order order = new Order(flowerDecoration, deliveryMethod, buyMethod);
-        if (order.calculatePrice() > customer.getBalance()) {
-            throw new RuntimeException("You don\'t have enough money");
-        }
-        this.balance += order.calculatePrice();
-        customer.setBalance(customer.getBalance() - order.calculatePrice());
-        readyFlowerDecorations.remove(flowerDecoration);
-        soldProducts.add(order);
-        customer.getBoughtProducts().add(order);
-    }*/
     void buy(Priceable priceable, Customer customer, DeliveryMethod deliveryMethod, BuyMethod buyMethod) {
         if (priceable instanceof FlowerDecoration) {
             if (!readyFlowerDecorations.contains(priceable)) {
                 throw new RuntimeException("There\'s no such flower decoration");
             }
         }
-        if (priceable instanceof Plant) {
+        else if (priceable instanceof Plant) {
             if (!inventoryOfPlants.contains(priceable)) {
                 throw new RuntimeException("There\'s no such flower");
             }
+        }
+        else {
+            throw new RuntimeException("The there is no such suitable purchase method here");
         }
         Order order = new Order(priceable, deliveryMethod, buyMethod);
         if (order.calculatePrice() > customer.getBalance()) {

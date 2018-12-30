@@ -1,9 +1,10 @@
 package com.alpha;
 
-import com.alpha.decorations.Accessory;
+import com.alpha.decorations.WrapperType;
 import com.alpha.decorations.FlowerBouquet;
 import com.alpha.decorations.FlowerDecoration;
 import com.alpha.decorations.FlowerPot;
+import com.alpha.io.ProductsIO;
 import com.alpha.plants.*;
 import com.alpha.random.StoreRandomizer;
 
@@ -23,61 +24,79 @@ public class StoreForUser {
 
     public static void main(String[] args) {
         //------------------------------------------------------------------------------------------------
-        List<FlowerDecoration> flowerDecorations = new ArrayList<>();
 
         Store store = new StoreRandomizer(47).nextStore(10,10,10,10);
+        ProductsIO productsIO1 = new ProductsIO("FlowerProducts.dat");
+        ProductsIO productsIO2 = new ProductsIO("FlowerDecorations.dat");
+        List<Plant> plants = new ArrayList<>();
+        List<FlowerDecoration> flowerDecorations = new ArrayList<>();
+        try {
+            productsIO1.write((store.getPlants().stream().map((a) -> (Priceable) a).collect(Collectors.toList())));
+            productsIO2.write((store.getReadyFlowerDecorations().stream().map((a) -> (Priceable) a).collect(Collectors.toList())));
+            plants = productsIO1.read().stream().map((a) -> (Plant) a).collect(Collectors.toList());
+            flowerDecorations = productsIO2.read().stream().map((a)->(FlowerDecoration)a).collect(Collectors.toList());
+
+        }catch (Exception e){
+            System.err.println(e);
+        }
+
+        /*Store */store = new Store(plants,flowerDecorations,"Ukraine");
         Customer customer = new Customer("Don", "Vova", 1000, 1);
         store.getCustomers().add(customer);
         StoreForUser storeForUser = new StoreForUser(store);
 
         while (true) {
             storeForUser.help();
-            switch (new Scanner(System.in).nextInt()) {
-                case 1:
-                    storeForUser.buyPlant(Flower.class, customer);
-                    break;
-                case 2:
-                    storeForUser.buyPlant(Tree.class, customer);
-                    break;
-                case 3:
-                    storeForUser.buyFlowerDecoration(FlowerBouquet.class, customer);
-                    break;
-                case 4:
-                    storeForUser.buyFlowerDecoration(FlowerPot.class, customer);
-                    break;
-                case 5:
-                    storeForUser.createAndBuyBouquet(customer);
-                    break;
-                case 6:
-                    storeForUser.createAndBuyFlowerPot(customer);
-                    break;
-                case 7:
-                    System.out.println(storeForUser.getStore().getFlowers(ShowFilter.ALL));
-                    break;
-                case 8:
-                    System.out.println(storeForUser.getStore().getTrees(ShowFilter.ALL));
-                    break;
-                case 9:
-                    System.out.println(storeForUser.getStore().getFlowerBouquets());
-                    break;
-                case 10:
-                    System.out.println(storeForUser.getStore().getFlowerPots());
-                    break;
-                case 11:
-                    System.out.println(customer.getBalance() + " $");
-                    break;
-                case 12:
-                    System.out.println(customer.getBoughtProducts());
-                    break;
-                default:
-                    System.out.println("Wrong command");
-                    break;
+            try {
+                switch (new Scanner(System.in).nextInt()) {
+                    case 1:
+                        storeForUser.buyPlant(Flower.class, customer);
+                        break;
+                    case 2:
+                        storeForUser.buyPlant(Tree.class, customer);
+                        break;
+                    case 3:
+                        storeForUser.buyFlowerDecoration(FlowerBouquet.class, customer);
+                        break;
+                    case 4:
+                        storeForUser.buyFlowerDecoration(FlowerPot.class, customer);
+                        break;
+                    case 5:
+                        storeForUser.createAndBuyBouquet(customer);
+                        break;
+                    case 6:
+                        storeForUser.createAndBuyFlowerPot(customer);
+                        break;
+                    case 7:
+                        System.out.println(storeForUser.getStore().getFlowers(ShowFilter.ALL));
+                        break;
+                    case 8:
+                        System.out.println(storeForUser.getStore().getTrees(ShowFilter.ALL));
+                        break;
+                    case 9:
+                        System.out.println(storeForUser.getStore().getFlowerBouquets());
+                        break;
+                    case 10:
+                        System.out.println(storeForUser.getStore().getFlowerPots());
+                        break;
+                    case 11:
+                        System.out.println(customer.getBalance() + " $");
+                        break;
+                    case 12:
+                        System.out.println(customer.getBoughtProducts());
+                        break;
+                    default:
+                        System.out.println("Wrong command");
+                        break;
+                }
+                System.out.println("Do you want to continue 1 - yes, 2 - no?");
+                if (storeForUser.readNumberInBounds(1, 2) == 2) {
+                    return;
+                }
+                storeForUser.scanner.nextLine();
+            }catch (Exception e){
+                System.err.println(e);
             }
-            System.out.println("Do you want to continue 1 - yes, 2 - no?");
-            if (storeForUser.readNumberInBounds(1, 2) == 2) {
-                return;
-            }
-            storeForUser.scanner.nextLine();
         }
     }
 
@@ -202,7 +221,6 @@ public class StoreForUser {
     FlowerBouquet createBouquet() {
         List<Flower> availableFlowers = store.getFlowers(ShowFilter.ALL);
         List<Flower> chosenFlowers = new ArrayList<>();
-        EnumSet<Accessory> chosenAccessories = EnumSet.noneOf(Accessory.class);
         if (availableFlowers.isEmpty()) {
             System.out.println("There\'s no  available plants, try again later");
             return null;
@@ -218,15 +236,12 @@ public class StoreForUser {
             chosenFlowers.add(flower);
         }
         i = 1;
-        for (Accessory accessory : Accessory.values()) {
-            System.out.println(i++ + ". " + accessory);
+        for (WrapperType wrapperType : WrapperType.values()) {
+            System.out.println(i++ + ". " + wrapperType);
         }
-        matcher = pattern.matcher(scanner.nextLine());
-        while (matcher.find()) {
-            Accessory accessory = Accessory.values()[Integer.parseInt(matcher.group("index")) - 1];
-            chosenAccessories.add(accessory);
-        }
-        return new FlowerBouquet(chosenFlowers, chosenAccessories);
+
+        WrapperType chosenWrapperType = WrapperType.values()[readNumberInBounds(1, WrapperType.values().length)-1];
+        return new FlowerBouquet(chosenFlowers, chosenWrapperType);
     }
 
     void createAndBuyBouquet(Customer customer) {
@@ -235,7 +250,7 @@ public class StoreForUser {
             if (flowerBouquet == null) {
                 return;
             }
-            store.createAndBuyFlowerBouquet(flowerBouquet.getFlowers(), flowerBouquet.getAccessories(), customer, chooseDeliverMethod(), chooseBuyMethod());
+            store.createAndBuyFlowerBouquet(flowerBouquet.getFlowers(), flowerBouquet.getWrapperType(), customer, chooseDeliverMethod(), chooseBuyMethod());
         } catch (ArrayIndexOutOfBoundsException e) {
             System.out.println("You entered some wrong indexes, try again!");
         }

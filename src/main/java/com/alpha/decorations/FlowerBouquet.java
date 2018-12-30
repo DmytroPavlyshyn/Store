@@ -1,45 +1,37 @@
 package com.alpha.decorations;
 
-import com.alpha.Priceable;
 import com.alpha.plants.Flower;
 
 import java.io.Serializable;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 
 public class FlowerBouquet extends FlowerDecoration implements Serializable {
-    private EnumSet<Accessory> accessories;
+    WrapperType wrapperType;
 
 
-
-    public FlowerBouquet(List<Flower> flowers, EnumSet<Accessory> accessories) {
+    public FlowerBouquet(List<Flower> flowers, WrapperType wrapperType) {
         super(flowers);
-        this.accessories = accessories;
+        this.wrapperType = wrapperType;
     }
 
-    public EnumSet<Accessory> getAccessories() {
-        return accessories;
+    public WrapperType getWrapperType() {
+        return wrapperType;
     }
-
-
 
     public int calculatePrice() {
         int price = 0;
         for (Flower flower : getFlowers()) {
             price += flower.calculatePrice();
-
         }
-        for(Accessory accessory: accessories){
-            price +=accessory.getPrice();
-        }
+        price += wrapperType.getPrice();
         return price;
     }
 
     @Override
     public String toString() {
         return "\nFlowerBouquet{" +
-                "accessories=" + accessories +
+                "wrapperType=" + wrapperType +
                 ", flowers=" + getFlowers() +
                 "}\n";
     }
@@ -50,11 +42,11 @@ public class FlowerBouquet extends FlowerDecoration implements Serializable {
         if (!(o instanceof FlowerBouquet)) return false;
         if (!super.equals(o)) return false;
         FlowerBouquet that = (FlowerBouquet) o;
-        return Objects.equals(getAccessories(), that.getAccessories());
+        return getWrapperType() == that.getWrapperType();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), getAccessories());
+        return Objects.hash(super.hashCode(), getWrapperType());
     }
 }

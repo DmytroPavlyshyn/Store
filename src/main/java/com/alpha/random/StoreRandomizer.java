@@ -1,14 +1,13 @@
 package com.alpha.random;
 
 import com.alpha.Store;
-import com.alpha.decorations.Accessory;
+import com.alpha.decorations.WrapperType;
 import com.alpha.decorations.FlowerBouquet;
 import com.alpha.decorations.FlowerDecoration;
 import com.alpha.decorations.FlowerPot;
 import com.alpha.plants.*;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Random;
 
@@ -90,12 +89,9 @@ public class StoreRandomizer {
         for (int i = 0; i < numberOfFlowers; i++) {
             flowers.add(nextFlower());
         }
-        int numberOfAccessories =1 +  random.nextInt(Accessory.values().length);
-        EnumSet<Accessory> accessories = EnumSet.noneOf(Accessory.class);
-        while (accessories.size()!=numberOfAccessories){
-            accessories.add(Accessory.values()[random.nextInt(Accessory.values().length)]);
-        }
-        return new FlowerBouquet(flowers,accessories);
+        WrapperType[] wrapperTypes = WrapperType.values();
+        WrapperType randWrapperType = wrapperTypes[random.nextInt(wrapperTypes.length)];
+        return new FlowerBouquet(flowers, randWrapperType);
     }
     public static void main(String[] args) {
         StoreRandomizer storeRandomizer = new StoreRandomizer(47);

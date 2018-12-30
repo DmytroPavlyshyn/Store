@@ -2,6 +2,6 @@ package com.alpha.plants;
 
 import java.io.Serializable;
 
-public enum FlowerType implements Serializable {
-    ROSE,CHAMOMILE, NARCISSUS, MAGNOLIA, ASTER, SUNFLOWER, DAHLIA, FRANGIPANI, CAMELLIA;
+public enum FlowerType  {
+    ROSE,CHAMOMILE, NARCISSUS, MAGNOLIA, ASTER, SUNFLOWER, DAHLIA, FRANGIPANI, CAMELLIA, CACTUS;
 }
